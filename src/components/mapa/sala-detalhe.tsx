@@ -45,30 +45,36 @@ export default function SalaDetalhe({ sala, onClose }: Props) {
       <h3 className='text-lg font-semibold'>Turmas alocadas</h3>
       {sala.classes?.length ? (
         // Tabela "stacked" para telas pequenas, sem scroll lateral
-        <div className="w-full min-w-0">
-          <div className="block md:hidden space-y-2">
+        <div className='w-full min-w-0'>
+          <div className='block space-y-2 md:hidden'>
             {sala.classes.map((c, idx) => (
-              <div key={idx} className="border rounded p-2 text-xs flex flex-col gap-1 bg-muted/30">
-                <div><span className="font-semibold">Disciplina:</span> {c.nome}</div>
-                <div><span className="font-semibold">Horário:</span> {c.horario}</div>
-                <div><span className="font-semibold">Docente:</span> {c.docente}</div>
+              <div key={idx} className='bg-muted/30 flex flex-col gap-1 rounded border p-2 text-xs'>
+                <div>
+                  <span className='font-semibold'>Disciplina:</span> {c.nome}
+                </div>
+                <div>
+                  <span className='font-semibold'>Horário:</span> {c.horario}
+                </div>
+                <div>
+                  <span className='font-semibold'>Docente:</span> {c.docente}
+                </div>
               </div>
             ))}
           </div>
-          <Table className="w-full table-fixed text-sm hidden md:table" style={{ tableLayout: 'auto' }}>
+          <Table className='hidden w-full table-fixed text-sm md:table' style={{ tableLayout: 'auto' }}>
             <TableHeader>
               <TableRow>
-                <TableHead className="break-words whitespace-normal px-2 py-3">Disciplina</TableHead>
-                <TableHead className="break-words whitespace-normal px-2 py-3">Horário</TableHead>
-                <TableHead className="break-words whitespace-normal px-2 py-3">Docente</TableHead>
+                <TableHead className='px-2 py-3 break-words whitespace-normal'>Disciplina</TableHead>
+                <TableHead className='px-2 py-3 break-words whitespace-normal'>Horário</TableHead>
+                <TableHead className='px-2 py-3 break-words whitespace-normal'>Docente</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sala.classes.map((c, idx) => (
                 <TableRow key={idx}>
-                  <TableCell className="break-words whitespace-normal px-2 py-3">{c.nome}</TableCell>
-                  <TableCell className="break-words whitespace-normal px-2 py-3">{c.horario}</TableCell>
-                  <TableCell className="break-words whitespace-normal px-2 py-3">{c.docente}</TableCell>
+                  <TableCell className='px-2 py-3 break-words whitespace-normal'>{c.nome}</TableCell>
+                  <TableCell className='px-2 py-3 break-words whitespace-normal'>{c.horario}</TableCell>
+                  <TableCell className='px-2 py-3 break-words whitespace-normal'>{c.docente}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
