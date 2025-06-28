@@ -44,22 +44,31 @@ export default function SalaDetalhe({ sala, onClose }: Props) {
       {/* Turmas alocadas */}
       <h3 className='text-lg font-semibold'>Turmas alocadas</h3>
       {sala.classes?.length ? (
-        // Contêiner que permite a tabela encolher corretamente
-        <div className='w-full min-w-0'>
-          <Table className='w-full table-fixed'>
+        // Tabela "stacked" para telas pequenas, sem scroll lateral
+        <div className="w-full min-w-0">
+          <div className="block md:hidden space-y-2">
+            {sala.classes.map((c, idx) => (
+              <div key={idx} className="border rounded p-2 text-xs flex flex-col gap-1 bg-muted/30">
+                <div><span className="font-semibold">Disciplina:</span> {c.nome}</div>
+                <div><span className="font-semibold">Horário:</span> {c.horario}</div>
+                <div><span className="font-semibold">Docente:</span> {c.docente}</div>
+              </div>
+            ))}
+          </div>
+          <Table className="w-full table-fixed text-sm hidden md:table" style={{ tableLayout: 'auto' }}>
             <TableHeader>
               <TableRow>
-                <TableHead className='break-words whitespace-normal'>Disciplina</TableHead>
-                <TableHead className='break-words whitespace-normal'>Horário</TableHead>
-                <TableHead className='break-words whitespace-normal'>Docente</TableHead>
+                <TableHead className="break-words whitespace-normal px-2 py-3">Disciplina</TableHead>
+                <TableHead className="break-words whitespace-normal px-2 py-3">Horário</TableHead>
+                <TableHead className="break-words whitespace-normal px-2 py-3">Docente</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sala.classes.map((c, idx) => (
                 <TableRow key={idx}>
-                  <TableCell className='break-words whitespace-normal'>{c.nome}</TableCell>
-                  <TableCell className='break-words whitespace-normal'>{c.horario}</TableCell>
-                  <TableCell className='break-words whitespace-normal'>{c.docente}</TableCell>
+                  <TableCell className="break-words whitespace-normal px-2 py-3">{c.nome}</TableCell>
+                  <TableCell className="break-words whitespace-normal px-2 py-3">{c.horario}</TableCell>
+                  <TableCell className="break-words whitespace-normal px-2 py-3">{c.docente}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
