@@ -1,0 +1,44 @@
+name: Update raw.json from API
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Every day at 06:00 UTC
+
+jobs:
+  update-raw-json:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch latest raw.json from API
+        run: |
+          curl -sSL "https://sa.ci.ufpb.br/api/db/public/paas?centro=ci" -o remote-raw.json
+
+      - name: Compare with current raw.json
+        id: compare
+        run: |
+          if cmp --silent remote-raw.json src/lib/saci/raw.json; then
+            echo "No update needed."
+            echo "update_needed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Update needed."
+            echo "update_needed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Replace raw.json if changed
+        if: steps.compare.outputs.update_needed == 'true'
+        run: |
+          mv remote-raw.json src/lib/saci/raw.json
+
+      - name: Commit and push changes
+        if: steps.compare.outputs.update_needed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/lib/saci/raw.json
+          git commit -m "chore: update raw.json from API at $(date -u +'%Y-%m-%d %H:%M:%S')"
+          git push

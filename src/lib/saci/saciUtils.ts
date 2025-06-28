@@ -1,15 +1,12 @@
 import { PrimeiroAndar, SegundoAndar, Subsolo, TerceiroAndar, Terreo } from './andares';
+import raw from './raw.json';
 import type { SVGAndaresCI, Saci } from './types';
 
 export async function carregarDadosDoSaci(): Promise<Saci> {
-  const res = await fetch(
-    'https://raw.githubusercontent.com/cacdia/cacdia.github.io/refs/heads/master/static/data/saci/saci.json'
-  );
-  if (!res.ok) {
-    throw new Error(`Erro ao buscar dados: ${res.status}`);
-  }
-  const data = await res.json();
-  return data as Saci;
+  // TODO: Implementar a lógica de validação do carregamento dos dados do Saci e fallback
+  // WARNING: unsafe as fuck, this is a JSON file that is not typed
+  const data = raw as unknown as Saci;
+  return data;
 }
 
 export async function andaresDoCI(): Promise<SVGAndaresCI> {
