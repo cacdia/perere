@@ -16,7 +16,32 @@ jobs:
 
       - name: Fetch latest raw.json from API
         run: |
-          curl -sSL "https://sa.ci.ufpb.br/api/db/public/paas?centro=ci" -o remote-raw.json
+          if ! curl -sSL "https://sa.ci.ufpb.br/api/db/public/paas?centro=ci" -o remote-raw.json; then
+            echo "Failed to download from API"
+            exit 1
+          fi
+
+      - name: Validate downloaded content
+        run: |
+          # Check if the downloaded file is valid JSON
+          if ! jq empty remote-raw.json 2>/dev/null; then
+            echo "Downloaded content is not valid JSON"
+            cat remote-raw.json
+            exit 1
+          fi
+          
+          # Check if the content is an error response
+          if jq -e '.statusCode or .error' remote-raw.json >/dev/null 2>&1; then
+            echo "API returned an error response:"
+            cat remote-raw.json
+            exit 1
+          fi
+          
+          # Check if the file is not empty and has meaningful content
+          if [ ! -s remote-raw.json ] || [ "$(jq -r 'type' remote-raw.json)" = "null" ]; then
+            echo "Downloaded file is empty or contains null data"
+            exit 1
+          fi
 
       - name: Compare with current raw.json
         id: compare
@@ -42,3 +67,8 @@ jobs:
           git add src/lib/saci/raw.json
           git commit -m "chore: update raw.json from API at $(date -u +'%Y-%m-%d %H:%M:%S')"
           git push
+
+      - name: Clean up temporary file
+        if: always()
+        run: |
+          rm -f remote-raw.json
