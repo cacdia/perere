@@ -16,7 +16,7 @@ jobs:
 
       - name: Fetch latest raw.json from API
         run: |
-          if ! curl -sSL "https://sa.ci.ufpb.br/api/db/public/paas?centro=ci" -o remote-raw.json; then
+          if ! curl -sSL "https://sa.ci.ufpb.br/api/paas/center?id=CI" -o remote-raw.json; then
             echo "Failed to download from API"
             exit 1
           fi
