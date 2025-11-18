@@ -54,6 +54,7 @@ export interface SVGRect {
   height: number;
   codigo: string;
   saci?: SaciRoom;
+  hasExternalEdge?: boolean;
 }
 
 export interface SVGAndaresCI {
