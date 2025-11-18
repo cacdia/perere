@@ -29,57 +29,94 @@ const MapaDoAndar: React.FC<{
   docentesPorSala?: Record<string, Docente[]>;
   segundoAndar?: boolean;
   outrosPorSala?: Record<string, Outro>;
-}> = ({ salas, onSalaClick, docentesPorSala, segundoAndar, outrosPorSala }) => (
-  <div className='flex w-full justify-center'>
-    <svg
-      version='1.1'
-      viewBox='0 0 960 540'
-      fill='none'
-      xmlns='http://www.w3.org/2000/svg'
-      className='h-auto w-full max-w-6xl rounded-lg border-2 border-gray-300 bg-gray-50 shadow-sm dark:border-zinc-700 dark:bg-zinc-950'>
-      <g>
-        {salas.map((s, idx) => {
-          const docentesSala = docentesPorSala?.[s.codigo] || [];
-          const codigo = s.codigo.trim().toUpperCase();
-          const isOutro = outrosPorSala && !!outrosPorSala[codigo];
-          let isClickable = false;
-          if (segundoAndar) {
-            isClickable = docentesSala.length > 0;
-          } else {
-            isClickable = Boolean(s.saci) || Boolean(isOutro);
-          }
+}> = ({ salas, onSalaClick, docentesPorSala, segundoAndar, outrosPorSala }) => {
+  function getRoomType(sala: SVGRect): 'corridor' | 'stairs' | 'other' {
+    const lower = sala.codigo.trim().toLowerCase();
+    if (lower === 'escada' || lower.includes('escada')) return 'stairs';
+    if (lower === 'corredor' || lower.includes('corredor')) return 'corridor';
+    return 'other';
+  }
 
-          let saciProp = undefined;
-          if (isClickable) {
-            saciProp = {
-              id: 0,
-              bloco: '',
-              nome: '',
-              capacidade: 0,
-              tipo: '',
-              acessivel: false,
-              preferencias: [],
-              execao: '',
-              excecao: '',
-              classes: []
-            };
-          } else if (!segundoAndar) {
-            saciProp = s.saci;
-          }
+  function isAdjacentToSimilar(sala: SVGRect, otherSala: SVGRect): boolean {
+    const salaType = getRoomType(sala);
+    const otherType = getRoomType(otherSala);
 
-          return (
-            <Sala
-              key={`${s.codigo}-${idx}`}
-              {...s}
-              onClick={isClickable && onSalaClick ? () => onSalaClick(s) : undefined}
-              saci={saciProp}
-            />
-          );
-        })}
-      </g>
-    </svg>
-  </div>
-);
+    if (salaType !== otherType || salaType === 'other') return false;
+
+    const tolerance = 2;
+    const horizontallyAdjacent =
+      Math.abs(sala.x + sala.width - otherSala.x) < tolerance ||
+      Math.abs(otherSala.x + otherSala.width - sala.x) < tolerance;
+    const verticallyAdjacent =
+      Math.abs(sala.y + sala.height - otherSala.y) < tolerance ||
+      Math.abs(otherSala.y + otherSala.height - sala.y) < tolerance;
+
+    const horizontalOverlap = !(sala.y + sala.height < otherSala.y || otherSala.y + otherSala.height < sala.y);
+    const verticalOverlap = !(sala.x + sala.width < otherSala.x || otherSala.x + otherSala.width < sala.x);
+
+    return (horizontallyAdjacent && horizontalOverlap) || (verticallyAdjacent && verticalOverlap);
+  }
+
+  return (
+    <div className='flex w-full justify-center px-4 md:px-6'>
+      <svg
+        version='1.1'
+        viewBox='0 0 960 540'
+        fill='none'
+        xmlns='http://www.w3.org/2000/svg'
+        className='h-auto w-full max-w-6xl border-4 border-slate-700 bg-slate-100 shadow-xl dark:border-slate-300 dark:bg-slate-900'
+        style={{ touchAction: 'manipulation' }}>
+        <g>
+          {salas.map((s, idx) => {
+            const docentesSala = docentesPorSala?.[s.codigo] || [];
+            const codigo = s.codigo.trim().toUpperCase();
+            const isOutro = outrosPorSala && !!outrosPorSala[codigo];
+            let isClickable = false;
+            if (segundoAndar) {
+              isClickable = docentesSala.length > 0;
+            } else {
+              isClickable = Boolean(s.saci) || Boolean(isOutro);
+            }
+
+            let saciProp = undefined;
+            if (isClickable) {
+              saciProp = {
+                id: 0,
+                bloco: '',
+                nome: '',
+                capacidade: 0,
+                tipo: '',
+                acessivel: false,
+                preferencias: [],
+                execao: '',
+                excecao: '',
+                classes: []
+              };
+            } else if (!segundoAndar) {
+              saciProp = s.saci;
+            }
+
+            const hasAdjacentSimilar = salas.some(
+              (other, otherIdx) => otherIdx !== idx && isAdjacentToSimilar(s, other)
+            );
+            const hasDocentes = segundoAndar && docentesSala.length > 0;
+
+            return (
+              <Sala
+                key={`${s.codigo}-${idx}`}
+                {...s}
+                onClick={isClickable && onSalaClick ? () => onSalaClick(s) : undefined}
+                saci={saciProp}
+                isAdjacent={hasAdjacentSimilar}
+                hasDocentes={hasDocentes}
+              />
+            );
+          })}
+        </g>
+      </svg>
+    </div>
+  );
+};
 
 export default function MapaIndex({ andares }: MapaIndexProps) {
   const tabs: TabItem[] = [
@@ -90,7 +127,6 @@ export default function MapaIndex({ andares }: MapaIndexProps) {
     { id: 'terceiro', label: '3º Andar', salas: andares.terceiro }
   ];
 
-  // Mapeia docentes por sala do segundo andar
   const docentesPorSala: Record<string, import('@/lib/saci/types').Docente[]> = {};
   docentes.forEach((doc) => {
     if (doc.sala) {
@@ -100,7 +136,6 @@ export default function MapaIndex({ andares }: MapaIndexProps) {
     }
   });
 
-  // Mapeia outros por sala
   const outrosPorSala: Record<string, import('@/lib/saci/types').Outro> = {};
   outros.forEach((outro) => {
     if (outro.sala) {
@@ -114,7 +149,6 @@ export default function MapaIndex({ andares }: MapaIndexProps) {
   const [showOutro, setShowOutro] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Função para abrir o modal com o conteúdo correto
   function handleSalaClick(sala: SVGRect) {
     setSelectedSala(sala);
     setShowDocente(null);
@@ -134,19 +168,17 @@ export default function MapaIndex({ andares }: MapaIndexProps) {
     setDialogOpen(true);
   }
 
-  // Limpa o conteúdo SÓ após a animação de saída terminar
   React.useEffect(() => {
     if (!dialogOpen && (selectedSala || showDocente || showOutro)) {
       const timeout = setTimeout(() => {
         setSelectedSala(null);
         setShowDocente(null);
         setShowOutro(null);
-      }, 200); // ajuste conforme a duração da animação do Dialog
+      }, 200);
       return () => clearTimeout(timeout);
     }
   }, [dialogOpen, selectedSala, showDocente, showOutro]);
 
-  // Função para renderizar o conteúdo do Dialog
   function renderDialogContent() {
     if (showDocente) {
       return (
@@ -166,7 +198,6 @@ export default function MapaIndex({ andares }: MapaIndexProps) {
     return null;
   }
 
-  // Função para obter o título do Dialog
   function getDialogTitle() {
     if (selectedSala?.codigo) return selectedSala.codigo;
     if (showDocente) return showDocente;
@@ -175,18 +206,19 @@ export default function MapaIndex({ andares }: MapaIndexProps) {
   }
 
   return (
-    <>
-      {/* Navegação por andares */}
+    <div className='container mx-auto px-4 md:px-6 lg:px-8'>
       <div className='mb-6 flex w-full justify-center'>
         <div className='w-full max-w-6xl'>
           <Tabs value={activeTab} onValueChange={setActiveTab} className='w-full'>
-            <TabsList>
-              {tabs.map(({ id, label }) => (
-                <TabsTrigger key={id} value={id}>
-                  {label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+            <div className='mb-4 flex justify-center'>
+              <TabsList className='grid w-full max-w-md grid-cols-5'>
+                {tabs.map(({ id, label }) => (
+                  <TabsTrigger key={id} value={id} className='text-xs md:text-sm'>
+                    {label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
             {tabs.map(({ id, salas }) => {
               let handleSalaClickFn: ((sala: SVGRect) => void) | undefined;
               let docentesPorSalaProp: Record<string, import('@/lib/saci/types').Docente[]> | undefined;
@@ -210,7 +242,7 @@ export default function MapaIndex({ andares }: MapaIndexProps) {
               }
 
               return (
-                <TabsContent key={id} value={id}>
+                <TabsContent key={id} value={id} className='mt-0'>
                   <MapaDoAndar
                     salas={salas}
                     onSalaClick={handleSalaClickFn}
@@ -225,17 +257,15 @@ export default function MapaIndex({ andares }: MapaIndexProps) {
         </div>
       </div>
 
-      {/* Modal de detalhes da sala, docente ou outro */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className='max-h-[85vh] overflow-y-auto'>
           <DialogHeader>
             <DialogTitle>{getDialogTitle()}</DialogTitle>
             <DialogClose />
           </DialogHeader>
-          {/* Só renderiza conteúdo se houver conteúdo, não apenas quando dialogOpen for true */}
           {(selectedSala || showDocente || showOutro) && renderDialogContent()}
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }
