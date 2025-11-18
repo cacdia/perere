@@ -64,17 +64,17 @@ export default function SalaDetalhe({ sala, onClose }: Props) {
           <Table className='hidden w-full table-fixed text-sm md:table' style={{ tableLayout: 'auto' }}>
             <TableHeader>
               <TableRow>
-                <TableHead className='px-2 py-3 break-words whitespace-normal'>Disciplina</TableHead>
-                <TableHead className='px-2 py-3 break-words whitespace-normal'>Horário</TableHead>
-                <TableHead className='px-2 py-3 break-words whitespace-normal'>Docente</TableHead>
+                <TableHead className='px-2 py-3 wrap-break-word whitespace-normal'>Disciplina</TableHead>
+                <TableHead className='px-2 py-3 wrap-break-word whitespace-normal'>Horário</TableHead>
+                <TableHead className='px-2 py-3 wrap-break-word whitespace-normal'>Docente</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {sala.classes.map((c, idx) => (
                 <TableRow key={idx}>
-                  <TableCell className='px-2 py-3 break-words whitespace-normal'>{c.nome}</TableCell>
-                  <TableCell className='px-2 py-3 break-words whitespace-normal'>{c.horario}</TableCell>
-                  <TableCell className='px-2 py-3 break-words whitespace-normal'>{c.docente}</TableCell>
+                  <TableCell className='px-2 py-3 wrap-break-word whitespace-normal'>{c.nome}</TableCell>
+                  <TableCell className='px-2 py-3 wrap-break-word whitespace-normal'>{c.horario}</TableCell>
+                  <TableCell className='px-2 py-3 wrap-break-word whitespace-normal'>{c.docente}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
