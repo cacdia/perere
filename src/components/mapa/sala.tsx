@@ -109,14 +109,14 @@ const Sala: React.FC<SVGRectProps> = ({ x, y, width, height, codigo, saci, onCli
     width,
     height,
     rx: 2,
-    stroke: '#d1d5db',
-    strokeWidth: 1,
+    strokeWidth: 1.5,
     ...rest
   };
-  const fillColor = saci ? '#f3f4f6' : '#ffffff';
   const fillClass = saci
-    ? 'transition-colors duration-200 fill-gray-100 hover:fill-gray-200 focus:fill-gray-200 cursor-pointer outline-none'
-    : 'fill-white';
+    ? 'transition-colors duration-200 fill-gray-100 hover:fill-gray-200 focus:fill-gray-300 dark:fill-zinc-800 dark:hover:fill-zinc-700 dark:focus:fill-zinc-600 cursor-pointer outline-none'
+    : 'fill-white dark:fill-zinc-900';
+  const strokeClass = 'stroke-gray-300 dark:stroke-zinc-700';
+  const textClass = 'pointer-events-none font-medium select-none fill-gray-700 dark:fill-zinc-300';
 
   return (
     <g
@@ -125,7 +125,7 @@ const Sala: React.FC<SVGRectProps> = ({ x, y, width, height, codigo, saci, onCli
       aria-label={saci ? `Detalhes da sala ${codigo}` : undefined}
       onClick={saci ? () => onClick?.({ x, y, width, height, codigo, saci }) : undefined}
       style={saci ? { cursor: 'pointer' } : undefined}>
-      <rect {...commonRect} fill={fillColor} className={fillClass} />
+      <rect {...commonRect} className={`${fillClass} ${strokeClass}`} />
       <title>{codigo}</title>
       {!omitText && (
         <text
@@ -135,8 +135,7 @@ const Sala: React.FC<SVGRectProps> = ({ x, y, width, height, codigo, saci, onCli
           dominantBaseline='middle'
           fontSize={fontSize}
           fontFamily='sans-serif'
-          fill='#374151'
-          className='pointer-events-none font-medium select-none'>
+          className={textClass}>
           {fittedText}
         </text>
       )}

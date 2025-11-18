@@ -36,7 +36,7 @@ const MapaDoAndar: React.FC<{
       viewBox='0 0 960 540'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      className='h-auto w-full max-w-6xl border border-gray-200 bg-white dark:border-zinc-800 dark:bg-zinc-900'>
+      className='h-auto w-full max-w-6xl rounded-lg border-2 border-gray-300 bg-gray-50 shadow-sm dark:border-zinc-700 dark:bg-zinc-950'>
       <g>
         {salas.map((s, idx) => {
           const docentesSala = docentesPorSala?.[s.codigo] || [];
